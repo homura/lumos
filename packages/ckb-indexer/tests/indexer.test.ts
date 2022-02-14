@@ -65,12 +65,22 @@ test("subscribe cells", async (t) => {
 });
 
 test("subscribe emitMedian TimeEvents", async (t) => {
-  const handle = (result: string) => {
-    t.is(result, "0x17d3723d27d");
+  const expectedResult = "0x17d3723d27d";
+  let result = "";
+  const handle = (data: string) => {
+    result = data;
   };
   const eventEmitter = indexer.subscribeMedianTime();
   eventEmitter.on("changed", handle);
-  await new Promise((_) => setTimeout(_, 1000));
+  await asyncRetry(
+    () => {
+      return !!result;
+    },
+    1000,
+    10000
+  ).then(() => {
+    t.is(result, expectedResult);
+  });
 });
 
 test("throw error when pass both null lock and null type to subscribe", (t) => {
