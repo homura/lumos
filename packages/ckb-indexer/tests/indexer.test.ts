@@ -13,6 +13,21 @@ test.before(() => {
     throw new Error("can not find bigint");
   };
 });
+
+async function asyncRetry(
+  callback: () => Promise<boolean> | boolean,
+  interval: number,
+  timeout: number
+) {
+  const start = Date.now();
+  while (true) {
+    if (Date.now() - start >= timeout) throw new Error("timeout");
+    const shouldBreak = await callback();
+    if (shouldBreak) break;
+    await new Promise((resolve) => setTimeout(resolve, interval));
+  }
+}
+
 test("subscribe cells", async (t) => {
   let blockIndex = 0;
   const stub = sinon.stub(indexer, "tip").callsFake(() => {
@@ -33,21 +48,38 @@ test("subscribe cells", async (t) => {
     let spy = sinon.spy();
     const eventEmitter = indexer.subscribe(queryCase.queryOption);
     eventEmitter.on("changed", spy);
-    await new Promise((resulve) => setTimeout(resulve, 90000));
-    t.is(spy.callCount, queryCase.expectedResult, queryCase.desc);
-    stub.resetHistory();
-    blockIndex = 0;
-    spy.resetHistory();
+    asyncRetry(
+      () => {
+        return spy.callCount >= queryCase.expectedResult;
+      },
+      1000,
+      10000
+    ).then(() => {
+      t.is(spy.callCount, queryCase.expectedResult, queryCase.desc);
+      stub.resetHistory();
+      blockIndex = 0;
+      spy.resetHistory();
+    });
   }
 });
 
 test("subscribe emitMedian TimeEvents", async (t) => {
-  const handle = (result: string) => {
-    t.is(result, "0x17d3723d27d");
+  const expectedResult = "0x17d3723d27d";
+  let result = "";
+  const handle = (data: string) => {
+    result = data;
   };
   const eventEmitter = indexer.subscribeMedianTime();
   eventEmitter.on("changed", handle);
-  await new Promise((resulve) => setTimeout(resulve, 1000));
+  await asyncRetry(
+    () => {
+      return !!result;
+    },
+    1000,
+    10000
+  ).then(() => {
+    t.is(result, expectedResult);
+  });
 });
 
 test("throw error when pass both null lock and null type to subscribe", (t) => {
