@@ -1,20 +1,20 @@
 import {
-  core,
-  HexString,
-  Cell,
-  Script,
-  CellDep,
   Address,
+  Cell,
+  CellDep,
   CellProvider,
+  core,
   Hash,
+  HexString,
   PackedSince,
+  Script,
   Transaction,
   WitnessArgs,
 } from "@ckb-lumos/base";
 import { bech32, bech32m } from "bech32";
-import { normalizers, validators, Reader } from "@ckb-lumos/toolkit";
-import { List, Record, Map as ImmutableMap } from "immutable";
-import { getConfig, Config } from "@ckb-lumos/config-manager";
+import { normalizers, Reader, validators } from "@ckb-lumos/toolkit";
+import { List, Map as ImmutableMap, Record } from "immutable";
+import { Config, getConfig } from "@ckb-lumos/config-manager";
 import { BI } from "@ckb-lumos/bi";
 
 export interface Options {
@@ -138,30 +138,6 @@ export function generateAddress(
   return bech32.encode(config.PREFIX, words, BECH32_LIMIT);
 }
 
-export function encodeToAddress(
-  script: Script,
-  { config = undefined }: Options = {}
-): Address {
-  config = config || getConfig();
-
-  const data: number[] = [];
-
-  const hash_type = (() => {
-    if (script.hash_type === "data") return 0;
-    if (script.hash_type === "type") return 1;
-    if (script.hash_type === "data1") return 2;
-
-    throw new Error(`unknown hash_type ${script.hash_type}`);
-  })();
-
-  data.push(0x00);
-  data.push(...hexToByteArray(script.code_hash));
-  data.push(hash_type);
-  data.push(...hexToByteArray(script.args));
-
-  return bech32m.encode(config.PREFIX, bech32m.toWords(data), BECH32_LIMIT);
-}
-
 /**
  * @deprecated please migrate to {@link encodeToAddress}, the short format address will be removed in the future
  */
@@ -261,6 +237,7 @@ function trySeries<T extends (...args: unknown[]) => unknown>(
       latestCatch = e;
     }
   }
+  /* c8 ignore next */
   throw latestCatch;
 }
 
@@ -286,6 +263,7 @@ export function parseAddress(
     case 0:
       //  1 +   32     +    1
       // 00  code_hash  hash_type
+      /* c8 ignore next 3 */
       if (data.length < 34) {
         throw new Error(`Invalid payload length!`);
       }
@@ -297,17 +275,20 @@ export function parseAddress(
           if (serializedHashType === 1) return "type" as const;
           if (serializedHashType === 2) return "data1" as const;
 
+          /* c8 ignore next */
           throw new Error(`unknown hash_type ${serializedHashType}`);
         })(),
         args: byteArrayToHex(data.slice(34)),
       };
     case 1:
+      /* c8 ignore next 3 */
       if (data.length < 2) {
         throw Error(`Invalid payload length!`);
       }
       const scriptTemplate = Object.values(config.SCRIPTS).find(
         (s) => s!.SHORT_ID === data[1]
       );
+      /* c8 ignore next 3 */
       if (!scriptTemplate) {
         throw Error(`Invalid code hash index: ${data[1]}!`);
       }
@@ -317,6 +298,7 @@ export function parseAddress(
         args: byteArrayToHex(data.slice(2)),
       };
     case 2:
+      /* c8 ignore next 3 */
       if (data.length < 33) {
         throw Error(`Invalid payload length!`);
       }
@@ -326,6 +308,7 @@ export function parseAddress(
         args: byteArrayToHex(data.slice(33)),
       };
     case 4:
+      /* c8 ignore next 3 */
       if (data.length < 33) {
         throw Error(`Invalid payload length!`);
       }
@@ -335,10 +318,36 @@ export function parseAddress(
         args: byteArrayToHex(data.slice(33)),
       };
   }
+  /* c8 ignore next */
   throw Error(`Invalid payload format type: ${data[0]}`);
 }
 
 export const addressToScript = parseAddress;
+
+export function encodeToAddress(
+  script: Script,
+  { config = undefined }: Options = {}
+): Address {
+  config = config || getConfig();
+
+  const data: number[] = [];
+
+  const hash_type = (() => {
+    if (script.hash_type === "data") return 0;
+    if (script.hash_type === "type") return 1;
+    if (script.hash_type === "data1") return 2;
+
+    /* c8 ignore next */
+    throw new Error(`unknown hash_type ${script.hash_type}`);
+  })();
+
+  data.push(0x00);
+  data.push(...hexToByteArray(script.code_hash));
+  data.push(hash_type);
+  data.push(...hexToByteArray(script.args));
+
+  return bech32m.encode(config.PREFIX, bech32m.toWords(data), BECH32_LIMIT);
+}
 
 export interface TransactionSkeletonInterface {
   cellProvider: CellProvider | null;
