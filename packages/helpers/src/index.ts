@@ -115,21 +115,6 @@ export function generateAddress(
   if (scriptTemplate && scriptTemplate.SHORT_ID !== undefined) {
     data.push(1, scriptTemplate.SHORT_ID);
     data.push(...hexToByteArray(script.args));
-  } else if (config.CKB2021) {
-    const hash_type = (() => {
-      if (script.hash_type === "data") return 0;
-      if (script.hash_type === "type") return 1;
-      if (script.hash_type === "data1") return 2;
-
-      throw new Error(`unknown hash_type ${script.hash_type}`);
-    })();
-
-    data.push(0x00);
-    data.push(...hexToByteArray(script.code_hash));
-    data.push(hash_type);
-    data.push(...hexToByteArray(script.args));
-
-    return bech32m.encode(config.PREFIX, bech32m.toWords(data), BECH32_LIMIT);
   } else {
     data.push(script.hash_type === "type" ? 4 : 2);
     data.push(...hexToByteArray(script.code_hash));
@@ -173,22 +158,6 @@ function generatePredefinedAddress(
   return generateAddress(script, { config });
 }
 
-export function encodeToPredefinedAddress(
-  args: HexString,
-  scriptType: string,
-  { config = undefined }: Options = {}
-) {
-  config = config || getConfig();
-  const template = config.SCRIPTS[scriptType]!;
-  const script: Script = {
-    code_hash: template.CODE_HASH,
-    hash_type: template.HASH_TYPE,
-    args,
-  };
-
-  return encodeToAddress(script, { config });
-}
-
 /**
  * @deprecated please migrate to {@link encodeToSecp256k1Blake160Address}, the short format address will be removed in the future
  * @param args
@@ -202,13 +171,6 @@ export function generateSecp256k1Blake160Address(
   return generatePredefinedAddress(args, "SECP256K1_BLAKE160", { config });
 }
 
-export function encodeToSecp256k1Blake160Address(
-  args: HexString,
-  { config = undefined }: Options = {}
-): Address {
-  return encodeToPredefinedAddress(args, "SECP256K1_BLAKE160", { config });
-}
-
 /**
  * @deprecated
  * @param args
@@ -220,15 +182,6 @@ export function generateSecp256k1Blake160MultisigAddress(
   { config = undefined }: Options = {}
 ): Address {
   return generatePredefinedAddress(args, "SECP256K1_BLAKE160_MULTISIG", {
-    config,
-  });
-}
-
-export function encodeToSecp256k1Blake160MultisigAddress(
-  args: HexString,
-  { config = undefined }: Options = {}
-) {
-  return encodeToPredefinedAddress(args, "SECP256K1_BLAKE160_MULTISIG", {
     config,
   });
 }
