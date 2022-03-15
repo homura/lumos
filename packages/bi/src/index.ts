@@ -1,7 +1,7 @@
 import JSBI from "jsbi";
 export type BIish = number | string | bigint | BI;
 
-export function isBIish(value: any): value is BIish {
+export function isBIish(value: unknown): value is BIish {
   return (
     value !== null &&
     ((typeof value === "number" && value % 1 === 0) ||
@@ -152,7 +152,7 @@ export class BI {
     }
   }
 
-  static from(value: any): BI {
+  static from(value: unknown): BI {
     if (value instanceof BI) {
       return value;
     } else if (isBIish(value)) {
