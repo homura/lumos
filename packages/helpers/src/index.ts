@@ -81,8 +81,9 @@ export function locateCellDep(
   config = config || getConfig();
   const scriptTemplate = Object.values(config.SCRIPTS).find(
     (s) =>
-      s!.CODE_HASH === script.code_hash && s!.HASH_TYPE === script.hash_type
+      s && s.CODE_HASH === script.code_hash && s.HASH_TYPE === script.hash_type
   );
+
   if (scriptTemplate) {
     return {
       dep_type: scriptTemplate.DEP_TYPE,
@@ -108,7 +109,7 @@ export function generateAddress(
   config = config || getConfig();
   const scriptTemplate = Object.values(config.SCRIPTS).find(
     (s) =>
-      s!.CODE_HASH === script.code_hash && s!.HASH_TYPE === script.hash_type
+      s && s.CODE_HASH === script.code_hash && s.HASH_TYPE === script.hash_type
   );
   const data: number[] = [];
   if (scriptTemplate && scriptTemplate.SHORT_ID !== undefined) {
@@ -156,7 +157,13 @@ function generatePredefinedAddress(
   { config = undefined }: Options = {}
 ): Address {
   config = config || getConfig();
-  const template = config.SCRIPTS[scriptType]!;
+  const template = config.SCRIPTS[scriptType];
+  if (!template) {
+    const availableKeys = Object.keys(config.SCRIPTS);
+    throw new Error(
+      `Invalid script type: ${scriptType}, only support: ${availableKeys}`
+    );
+  }
   const script: Script = {
     code_hash: template.CODE_HASH,
     hash_type: template.HASH_TYPE,
@@ -230,7 +237,7 @@ function trySeries<T extends (...args: unknown[]) => unknown>(
   ...fns: T[]
 ): ReturnType<T> {
   let latestCatch: unknown;
-  for (let fn of fns) {
+  for (const fn of fns) {
     try {
       return fn() as ReturnType<T>;
     } catch (e) {
@@ -260,7 +267,7 @@ export function parseAddress(
     () => bech32.fromWords(words)
   );
   switch (data[0]) {
-    case 0:
+    case 0: {
       //  1 +   32     +    1
       // 00  code_hash  hash_type
       /* c8 ignore next 3 */
@@ -280,13 +287,14 @@ export function parseAddress(
         })(),
         args: byteArrayToHex(data.slice(34)),
       };
-    case 1:
+    }
+    case 1: {
       /* c8 ignore next 3 */
       if (data.length < 2) {
         throw Error(`Invalid payload length!`);
       }
       const scriptTemplate = Object.values(config.SCRIPTS).find(
-        (s) => s!.SHORT_ID === data[1]
+        (s) => s && s.SHORT_ID === data[1]
       );
       /* c8 ignore next 3 */
       if (!scriptTemplate) {
@@ -297,7 +305,8 @@ export function parseAddress(
         hash_type: scriptTemplate.HASH_TYPE,
         args: byteArrayToHex(data.slice(2)),
       };
-    case 2:
+    }
+    case 2: {
       /* c8 ignore next 3 */
       if (data.length < 33) {
         throw Error(`Invalid payload length!`);
@@ -307,7 +316,8 @@ export function parseAddress(
         hash_type: "data",
         args: byteArrayToHex(data.slice(33)),
       };
-    case 4:
+    }
+    case 4: {
       /* c8 ignore next 3 */
       if (data.length < 33) {
         throw Error(`Invalid payload length!`);
@@ -317,6 +327,7 @@ export function parseAddress(
         hash_type: "type",
         args: byteArrayToHex(data.slice(33)),
       };
+    }
   }
   /* c8 ignore next */
   throw Error(`Invalid payload format type: ${data[0]}`);
@@ -387,9 +398,14 @@ export function createTransactionFromSkeleton(
     inputs: txSkeleton
       .get("inputs")
       .map((input, i) => {
+        if (!input.out_point) {
+          throw new Error(
+            `cannot find OutPoint in Inputs[${i}] when createTransactionFromSkeleton`
+          );
+        }
         return {
           since: txSkeleton.get("inputSinces").get(i, "0x0"),
-          previous_output: input.out_point!,
+          previous_output: input.out_point,
         };
       })
       .toArray(),
@@ -423,7 +439,7 @@ export function sealTransaction(
   }
   txSkeleton.get("signingEntries").forEach((e, i) => {
     switch (e.type) {
-      case "witness_args_lock":
+      case "witness_args_lock": {
         const witness = tx.witnesses[e.index];
         const witnessArgs = new core.WitnessArgs(new Reader(witness));
         const newWitnessArgs: WitnessArgs = {
@@ -448,6 +464,7 @@ export function sealTransaction(
           )
         ).serializeJson();
         break;
+      }
       default:
         throw new Error(`Invalid signing entry type: ${e.type}`);
     }
