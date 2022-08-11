@@ -42,6 +42,7 @@ const config = {
           // Remove this to remove the "edit this page" links.
           editUrl:
             "https://github.com/nervosnetwork/lumos/tree/develop/website",
+          remarkPlugins: [require("mdx-mermaid")],
         },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
