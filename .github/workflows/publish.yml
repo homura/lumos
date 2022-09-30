@@ -1,10 +1,14 @@
 name: publish
 on:
-  # When Release Pull Request is merged
+  workflow_run:
+    workflows: [CI]
+    types:
+      - completed
+      # When Release Pull Request is merged
   push:
     branches:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'
-      - 'next/v[0-9]+.[0-9]+.[0-9]+*'
+      - "v[0-9]+.[0-9]+.[0-9]+*"
+      - "next/v[0-9]+.[0-9]+.[0-9]+*"
 
 permissions:
   contents: write # for checkout and tag
@@ -31,7 +35,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Install
-        run: yarn install
+        run: yarn --frozen-lockfile --frozen-lockfile
       # Define ${CURRENT_VERSION}
       - name: Set Current Version
         run: |
@@ -92,7 +96,7 @@ jobs:
           release_name: ${{ env.CURRENT_VERSION }}
           draft: false
           prerelease: ${{ steps.tag_check.prerelease_check.prerelease }}
-          
+
       - name: Publish
         if: steps.tag_check.outputs.exists_tag == 'false'
         run: |
