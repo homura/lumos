@@ -44,7 +44,8 @@ async function waitLightClientPrepared(lightClientRpc: LightClientRPC) {
       await lightClientRpc.getTipHeader();
       return;
     } catch (err) {
-      asyncSleep(1000);
+      console.error(err);
+      await asyncSleep(1000);
     }
   }
 }
