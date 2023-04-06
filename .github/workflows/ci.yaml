@@ -55,7 +55,7 @@ jobs:
           yarn --ignore-engines --frozen-lockfile
           yarn build
           docker-compose -f ./packages/e2e-test/docker/docker-compose.yml build
-          curl http://127.0.0.1:9000/ -X POST -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method":"local_node_info", "params": [], "id": 1}'
+          docker compose -f ./packages/e2e-test/docker/docker-compose.yml logs -f --until 1m light-client
       - name: e2e test
         run: yarn e2e-test
 

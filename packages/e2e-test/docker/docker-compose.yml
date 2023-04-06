@@ -24,7 +24,7 @@ services:
         ipv4_address: 192.168.3.101
 
 networks:
-  nn: 
+  nn:
     driver: bridge
     ipam:
       driver: default
