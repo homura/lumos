@@ -1,5 +1,6 @@
-import { syncScrypt as _scryptSync, scrypt as _scrypt } from "scrypt-js";
+import pkg from "scrypt-js";
 import { ScryptOptions } from "./types";
+const { syncScrypt: _scryptSync, scrypt: _scrypt } = pkg;
 
 function assertOptions(
   options: ScryptOptions

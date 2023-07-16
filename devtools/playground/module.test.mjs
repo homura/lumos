@@ -8,6 +8,7 @@ const MODULES = [
   "@ckb-lumos/codec/bytes",
   "@ckb-lumos/codec/number",
   "@ckb-lumos/toolkit",
+  "@ckb-lumos/crypto",
   "@ckb-lumos/base",
   "@ckb-lumos/base/blockchain",
   "@ckb-lumos/base/since",
