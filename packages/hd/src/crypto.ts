@@ -1,1 +1,1 @@
-export * from "@ckb-lumos/crypto";
+export * from "@ckb-lumos/crypto/crypto-browser";

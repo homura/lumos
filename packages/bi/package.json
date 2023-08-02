@@ -35,7 +35,7 @@
     "test": "ava **/*.test.ts --timeout=2m",
     "build": "npm run build:all",
     "build:all": "lumos-build --types --cjs --esm",
-    "clean": "rm -rf lib"
+    "clean": "shx rm -rf lib lib.esm"
   },
   "bugs": {
     "url": "https://github.com/ckb-js/lumos/issues"

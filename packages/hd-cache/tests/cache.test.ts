@@ -201,7 +201,7 @@ class MockTransactionCollector extends BaseIndexerModule.TransactionCollector {
   }
 }
 
-stub(rpc, "getHeader").callsFake((blockHash) => { 
+stub(rpc, "getHeader").callsFake((blockHash) => {
   return Promise.resolve({ ...headerData, ...{ hash: blockHash } });
 });
 const tipStub = stub(indexer, "tip");
@@ -219,13 +219,6 @@ const cacheManager = CacheManager.fromMnemonic(
     rpc,
   }
 );
-
-test.before(() => {
-  // @ts-ignore: Unreachable code error
-  BigInt = () => {
-    throw new Error("can not find bigint");
-  };
-});
 
 test("derive threshold", async (t) => {
   const cacheManager = CacheManager.fromMnemonic(

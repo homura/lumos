@@ -16,5 +16,5 @@ import { createHash } from "@ckb-lumos/crypto";
 // In Node.js
 import { createHash } from "@ckb-lumos/crypto";
 // In browsers
-import { createHash } from "@ckb-lumos/crypto/lib/crypto-browser";
+import { createHash } from "@ckb-lumos/crypto/crypto-browser";
 ```
