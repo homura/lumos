@@ -167,6 +167,9 @@ importers:
       '@ckb-lumos/codec':
         specifier: 0.20.0
         version: link:../../packages/codec
+      '@ckb-lumos/crypto':
+        specifier: 0.20.0
+        version: link:../../packages/crypto
       '@ckb-lumos/toolkit':
         specifier: 0.20.0
         version: link:../../packages/toolkit
