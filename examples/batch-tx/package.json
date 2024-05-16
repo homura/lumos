@@ -1,0 +1,12 @@
+{
+  "name": "@lumos-example/batch-tx",
+  "private": true,
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "@ckb-lumos/lumos": "canary",
+    "@types/node-localstorage": "^1.3.3",
+    "node-localstorage": "^3.0.5",
+    "rxjs": "^7.8.1"
+  }
+}
